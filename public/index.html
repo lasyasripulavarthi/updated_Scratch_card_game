@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nutri Delight – Scratch &amp; Win</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body class="player-page">
+
+  <!-- ══════════ WELCOME SCREEN ══════════ -->
+  <div id="welcomeScreen" class="welcome-screen">
+    <div class="welcome-card">
+      <div class="welcome-logo-wrap">
+        <img id="welcomeLogo" src="/api/logo?t=0" alt="Nutri Delight" class="welcome-logo" />
+      </div>
+      <h1 class="welcome-heading">Scratch &amp; Win!</h1>
+      <p class="welcome-sub">Stand in front of the camera. Use your open palm to scratch and reveal your reward!</p>
+
+      <div class="gesture-instructions">
+        <div class="gi-title">How to Play</div>
+        <div class="gi-row gi-highlight">
+          <span class="gi-icon">✋</span>
+          <div>
+            <div class="gi-label">Open Palm — Scratch the card</div>
+            <div class="gi-desc">Show your open palm and move it over the card to scratch</div>
+          </div>
+        </div>
+        <div class="gi-row">
+          <span class="gi-icon">☝️</span>
+          <div>
+            <div class="gi-label">Index Finger — Move the cursor</div>
+            <div class="gi-desc">Your index fingertip is tracked as the scratch point</div>
+          </div>
+        </div>
+        <div class="gi-row">
+          <span class="gi-icon">🖐️</span>
+          <div>
+            <div class="gi-label">Keep hand in camera view</div>
+            <div class="gi-desc">Move continuously — zig-zag, circle, or swipe</div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="welcome-steps">
+        <li><span class="step-num">1</span><span class="step-text">Stand in front of the camera</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Show open palm ✋ and move over the card</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Reveal your reward!</span></li>
+      </ol>
+
+      <button id="startGameBtn" class="start-btn">START GAME</button>
+    </div>
+  </div>
+
+  <!-- ══════════ GAME SCREEN ══════════ -->
+  <div id="gameScreen" class="game-screen" style="display:none">
+
+    <!-- Mirrored camera background -->
+    <video id="bgVideo" autoplay muted playsinline></video>
+    <!-- Legacy hidden feed kept only for compatibility -->
+    <video id="mpVideo" autoplay muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;"></video>
+
+    <!-- ══ TOP GESTURE PANEL ══ -->
+    <div id="gesturePanel" class="gesture-panel">
+      <div class="gp-main-instruction">Stand in front of the screen and follow the hand gesture instructions</div>
+      <div class="gp-gestures">
+        <div id="gpPalm" class="gp-gesture gp-active">
+          <span class="gp-icon">✋</span>
+          <span class="gp-text">Open Palm — Scratch the card</span>
+        </div>
+        <div class="gp-divider">|</div>
+        <div id="gpFinger" class="gp-gesture">
+          <span class="gp-icon">☝️</span>
+          <span class="gp-text">Index Finger — Move the cursor</span>
+        </div>
+      </div>
+      <div id="gestureStatus" class="gp-status gp-status-waiting">
+        Hand not detected — place your hand in the camera view
+      </div>
+    </div>
+
+    <!-- Scratch card -->
+    <div id="cardWrap" class="card-wrap">
+      <canvas id="cardCanvas"></canvas>
+      <div id="rewardOverlay" class="reward-overlay" style="display:none">
+        <div class="reward-badge">🎉</div>
+        <div id="rewardName" class="reward-name"></div>
+        <div class="reward-sub">Congratulations!</div>
+        <div class="reward-done-msg">Show this screen to redeem your reward.</div>
+        <button id="backHomeBtn" class="back-home-btn">🏠 Back to Home</button>
+      </div>
+    </div>
+
+    <!-- Fingertip cursor -->
+    <div id="handCursor" class="hand-cursor" style="display:none"></div>
+
+  </div>
+
+  <script src="/js/player.js"></script>
+</body>
+</html>

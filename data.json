@@ -1,0 +1,44 @@
+{
+  "admins": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password_hash": "$2a$10$16MsnjtS45VQp3zkjFLjX.z2zFpv5E9lzDwPYL9MPy5PgJ5A6IMOq"
+    }
+  ],
+  "rewards": [
+    {
+      "id": 1,
+      "name": "🥤 FREE JUICE",
+      "probability": 10,
+      "active": 1
+    },
+    {
+      "id": 2,
+      "name": "🎁 10% OFF",
+      "probability": 15,
+      "active": 1
+    },
+    {
+      "id": 3,
+      "name": "🥗 FREE SALAD",
+      "probability": 10,
+      "active": 1
+    },
+    {
+      "id": 5,
+      "name": "🎉 20% OFF",
+      "probability": 5,
+      "active": 1
+    },
+    {
+      "id": 6,
+      "name": "⭐ BETTER LUCK NEXT TIME",
+      "probability": 50,
+      "active": 1
+    }
+  ],
+  "settings": {
+    "logo": "/assets/logo-1787381561389.png"
+  }
+}

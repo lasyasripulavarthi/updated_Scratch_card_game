@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin - Nutri Delight Scratch & Win</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="admin">
+    <header class="topbar">
+      <img id="siteLogoAdmin" src="/api/logo" alt="logo" class="logo" />
+      <div class="title">Admin Panel</div>
+    </header>
+    <main>
+      <section id="loginSection">
+        <h2>Admin Login</h2>
+        <form id="loginForm">
+          <input id="username" placeholder="username" value="admin" />
+          <input id="password" type="password" placeholder="password" />
+          <button type="submit">Login</button>
+        </form>
+      </section>
+
+      <section id="dashboard" style="display:none">
+        <h2>Manage Rewards</h2>
+        <div class="manage">
+          <div class="logo-manage">
+            <h3>Logo Management</h3>
+            <div>Current logo preview:</div>
+            <img id="currentLogo" src="/api/logo" style="height:96px;border:1px solid #ddd;padding:6px;margin:8px 0" />
+            <div>
+              <input id="logoFile" type="file" accept="image/*" />
+              <button id="uploadLogoBtn">Upload Logo</button>
+            </div>
+            <div>Preview before upload:</div>
+            <img id="logoPreview" style="height:96px;border:1px dashed #ccc;padding:6px;margin:8px 0;display:none" />
+          </div>
+          <form id="addForm">
+            <input id="rname" placeholder="Reward name" />
+            <input id="rprob" placeholder="Probability (e.g., 10)" type="number" />
+            <label><input id="ractive" type="checkbox" checked /> Active</label>
+            <button type="submit">Add Reward</button>
+          </form>
+          <div id="rewardsList"></div>
+          <button id="logoutBtn">Logout</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
