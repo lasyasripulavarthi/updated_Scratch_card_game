@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-label="Nutri Delight">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="420" rx="32" fill="url(#bg)"/>
+  <g transform="translate(54,64)">
+    <circle cx="110" cy="110" r="92" fill="#ecfdf5"/>
+    <path d="M78 154c18-52 78-80 112-70-18 56-76 100-112 70z" fill="url(#leaf)"/>
+    <path d="M118 72c8 22 10 46 0 78" stroke="#166534" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <path d="M71 124c28-30 62-38 96-34" stroke="#166534" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.8"/>
+  </g>
+  <g fill="#1f2937" font-family="Arial, Helvetica, sans-serif">
+    <text x="290" y="170" font-size="72" font-weight="800">NUTRI</text>
+    <text x="290" y="250" font-size="72" font-weight="800">DELIGHT</text>
+    <text x="292" y="320" font-size="34" font-weight="600" fill="#f59e0b">SCRATCH &amp; WIN</text>
+  </g>
+</svg>

@@ -9,7 +9,7 @@
 <body>
   <div class="admin">
     <header class="topbar">
-      <img id="siteLogoAdmin" src="/api/logo" alt="logo" class="logo" />
+      <img id="siteLogoAdmin" src="/assets/logo.svg" alt="logo" class="logo" />
       <div class="title">Admin Panel</div>
     </header>
     <main>
@@ -28,10 +28,10 @@
           <div class="logo-manage">
             <h3>Logo Management</h3>
             <div>Current logo preview:</div>
-            <img id="currentLogo" src="/api/logo" style="height:96px;border:1px solid #ddd;padding:6px;margin:8px 0" />
+            <img id="currentLogo" src="/assets/logo.svg" style="height:96px;border:1px solid #ddd;padding:6px;margin:8px 0" />
             <div>
               <input id="logoFile" type="file" accept="image/*" />
-              <button id="uploadLogoBtn">Upload Logo</button>
+              <button id="uploadLogoBtn" type="button">Upload Logo</button>
             </div>
             <div>Preview before upload:</div>
             <img id="logoPreview" style="height:96px;border:1px dashed #ccc;padding:6px;margin:8px 0;display:none" />
@@ -43,7 +43,7 @@
             <button type="submit">Add Reward</button>
           </form>
           <div id="rewardsList"></div>
-          <button id="logoutBtn">Logout</button>
+          <button id="logoutBtn" type="button">Logout</button>
         </div>
       </section>
     </main>

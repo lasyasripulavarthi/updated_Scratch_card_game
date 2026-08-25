@@ -2,7 +2,16 @@ const fs = require('fs').promises;
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
+let blobModule = null;
+try {
+  blobModule = require('@vercel/blob');
+} catch (_) {
+  blobModule = null;
+}
+
 const DATA_FILE = path.join(__dirname, 'data.json');
+const BLOB_KEY = 'nutri-delight-state.json';
+const usesBlobStorage = Boolean(process.env.VERCEL) && Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_READ_WRITE_TOKEN) && blobModule;
 
 let state = {
   admins: [],
@@ -10,17 +19,42 @@ let state = {
   settings: {}
 };
 
+async function loadFromBlob() {
+  if (!usesBlobStorage) return null;
+  try {
+    const result = await blobModule.get(BLOB_KEY);
+    if (!result || !result.url) return null;
+    const res = await fetch(result.url);
+    if (!res.ok) return null;
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch (_) {
+    return null;
+  }
+}
+
 async function load() {
   try {
+    const fromBlob = await loadFromBlob();
+    if (fromBlob) {
+      state = fromBlob;
+      return;
+    }
     const txt = await fs.readFile(DATA_FILE, 'utf8');
     state = JSON.parse(txt);
-  } catch (e) {
-    // initialize defaults
+  } catch (_) {
     state = { admins: [], rewards: [], settings: {} };
   }
 }
 
 async function save() {
+  if (usesBlobStorage) {
+    await blobModule.put(BLOB_KEY, JSON.stringify(state, null, 2), {
+      access: 'public',
+      contentType: 'application/json'
+    });
+    return;
+  }
   await fs.writeFile(DATA_FILE, JSON.stringify(state, null, 2), 'utf8');
 }
 
@@ -31,10 +65,18 @@ function nextId(collection) {
 
 async function init() {
   await load();
+
   if (!state.admins || state.admins.length === 0) {
-    const hash = await bcrypt.hash('adminpass', 10);
-    state.admins = [{ id: 1, username: 'admin', password_hash: hash }];
+    state.admins = [{ id: 1, username: 'admin', password_hash: await bcrypt.hash('adminpass', 10) }];
+  } else {
+    const admin = state.admins.find(a => a.username === 'admin');
+    if (!admin) {
+      state.admins.unshift({ id: 1, username: 'admin', password_hash: await bcrypt.hash('adminpass', 10) });
+    } else if (!(await bcrypt.compare('adminpass', admin.password_hash))) {
+      admin.password_hash = await bcrypt.hash('adminpass', 10);
+    }
   }
+
   if (!state.rewards || state.rewards.length === 0) {
     state.rewards = [
       { id: 1, name: '🥤 FREE JUICE', probability: 10, active: 1 },
@@ -46,7 +88,7 @@ async function init() {
     ];
   }
   if (!state.settings) state.settings = {};
-  if (!state.settings.logo) state.settings.logo = '/assets/logo.png';
+  if (!state.settings.logo) state.settings.logo = '/assets/logo.svg';
   await save();
 }
 

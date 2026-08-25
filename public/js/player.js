@@ -77,7 +77,6 @@
   let rafId        = null;
   let stream       = null;
   let lastSendTime = 0;
-  let reloadLogoTimer = null;
   let sendInFlight = false;
   let cameraStarting = false;
   let resizeBound = false;
@@ -97,7 +96,7 @@
   let   pal    = { h:145, s:58, l:28 };
   const DEBUG_PREFIX = '[Player]';
 
-  welcomeLogo.src = '/api/logo?t=' + Date.now();
+  welcomeLogo.src = '/assets/logo.svg';
 
   /* ══════════════════════════════════════════════════════
      BACK TO HOME — full reset
@@ -109,7 +108,6 @@
     sendInFlight = false;
     cameraStarting = false;
     if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    if (reloadLogoTimer) { clearInterval(reloadLogoTimer); reloadLogoTimer = null; }
     if (bgVideo.srcObject) bgVideo.pause();
     bgVideo.srcObject = null;
 
@@ -130,7 +128,7 @@
     handCursor.style.display    = 'none';
     gameScreen.style.display    = 'none';
     welcomeScreen.style.display = 'flex';
-    welcomeLogo.src = '/api/logo?t=' + Date.now();
+    welcomeLogo.src = '/assets/logo.svg';
   }
 
   /* ══════════════════════════════════════════════════════
@@ -145,17 +143,16 @@
 
   function init() {
     scratch.width = scratch.height = 1;
+    sizeCard();
+    setUI('noHand');
     document.fonts.ready.then(() => {
       loadLogo();
-      setUI('noHand');
     });
     if (!resizeBound) {
       window.addEventListener('resize', handleResize, { passive: true });
       resizeBound = true;
     }
     startCamera();
-    if (reloadLogoTimer) clearInterval(reloadLogoTimer);
-    reloadLogoTimer = setInterval(() => { if (!revealed && started) loadLogo(); }, 15000);
   }
 
   function handleResize() {
@@ -240,9 +237,9 @@
   ══════════════════════════════════════════════════════ */
   function loadLogo() {
     logo.crossOrigin = 'anonymous';
-    logo.onload  = () => { logoOk = true;  extractPalette(); sizeCard(); };
+    logo.onload  = () => { logoOk = true; extractPalette(); renderCard(); };
     logo.onerror = () => { logoOk = false; renderCard(); };
-    logo.src = '/api/logo?t=' + Date.now();
+    logo.src = '/api/logo';
   }
 
   function extractPalette() {

@@ -17,12 +17,8 @@
 
   let token = localStorage.getItem('nd_token');
 
-  // On page load, verify existing token before showing dashboard
-  if (token) {
-    const ok = await verifyToken();
-    if (ok) showDashboard();
-    else    showLogin();
-  }
+  // Show the login screen immediately so the user must explicitly submit credentials.
+  showLogin();
 
   /* ── Token verification: hit a protected endpoint lightly ── */
   async function verifyToken() {
