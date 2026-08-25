@@ -34,7 +34,13 @@
     {
       "id": 6,
       "name": "⭐ BETTER LUCK NEXT TIME",
-      "probability": 50,
+      "probability": 10,
+      "active": 1
+    },
+    {
+      "id": 7,
+      "name": "5% OFF",
+      "probability": 20,
       "active": 1
     }
   ],
