@@ -1,0 +1,4 @@
+node_modules/
+.env
+tmp_verify.js
+.DS_Store

@@ -39,12 +39,12 @@
     },
     {
       "id": 7,
-      "name": "5% OFF",
-      "probability": 20,
+      "name": "👍5% off",
+      "probability": 12,
       "active": 1
     }
   ],
   "settings": {
-    "logo": "/assets/logo-1787381561389.png"
+    "logo": "/assets/logo-1787646845516.png"
   }
 }
