@@ -36,15 +36,10 @@
       "name": "⭐ BETTER LUCK NEXT TIME",
       "probability": 10,
       "active": 1
-    },
-    {
-      "id": 7,
-      "name": "👍5% off",
-      "probability": 12,
-      "active": 1
     }
   ],
   "settings": {
-    "logo": "/assets/logo-1787646845516.png"
-  }
+    "logo": "/assets/logo-1787827436761.png"
+  },
+  "initialized": true
 }

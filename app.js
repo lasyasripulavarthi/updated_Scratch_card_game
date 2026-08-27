@@ -23,25 +23,13 @@ const DEFAULT_LOGO = path.join(__dirname, 'public', 'assets', 'logo.svg');
 const DEFAULT_LOGO_URL = '/assets/logo.svg';
 
 app.use(cors());
-app.use(bodyParser.json({ limit: '2mb' }));
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-const storage = isVercel
-  ? multer.memoryStorage()
-  : multer.diskStorage({
-      destination: function (_, __, cb) {
-        cb(null, path.join(__dirname, 'public', 'assets'));
-      },
-      filename: function (_, file, cb) {
-        const ext = path.extname(file.originalname) || '.png';
-        const fname = `logo-${Date.now()}${ext}`;
-        cb(null, fname);
-      }
-    });
-
+const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 }
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 function authMiddleware(req, res, next) {
@@ -81,7 +69,7 @@ app.get('/admin.html', (req, res) => {
 
 app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Missing creds' });
+  if (!username || !password) return res.status(400).json({ error: 'Missing credentials' });
   try {
     const admin = await db.findAdminAsync(username);
     if (!admin) return res.status(401).json({ error: 'Invalid credentials' });
@@ -90,7 +78,7 @@ app.post('/api/admin/login', async (req, res) => {
     const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '8h' });
     res.json({ token });
   } catch (e) {
-    console.error(e);
+    console.error('Login error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -100,14 +88,32 @@ app.get('/api/rewards', async (req, res) => {
     const rewards = await db.getActiveRewards();
     res.json(rewards);
   } catch (e) {
-    console.error(e);
+    console.error('Get active rewards error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 app.get('/api/logo', async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     const logoPath = await db.getSetting('logo');
+    if (!logoPath) {
+      return res.sendFile(DEFAULT_LOGO);
+    }
+
+    if (logoPath.startsWith('data:')) {
+      const matches = logoPath.match(/^data:(.+);base64,(.*)$/);
+      if (matches) {
+        const contentType = matches[1];
+        const buffer = Buffer.from(matches[2], 'base64');
+        res.setHeader('Content-Type', contentType);
+        return res.send(buffer);
+      }
+    }
+
     const target = resolveLocalLogoPath(logoPath || DEFAULT_LOGO_URL);
 
     if (/^https?:\/\//i.test(target)) {
@@ -120,7 +126,7 @@ app.get('/api/logo', async (req, res) => {
 
     res.sendFile(target);
   } catch (e) {
-    console.error(e);
+    console.error('Get logo error:', e);
     res.sendFile(DEFAULT_LOGO);
   }
 });
@@ -138,7 +144,7 @@ app.get('/api/rewards/random', async (req, res) => {
     }
     res.json(rewards[rewards.length - 1]);
   } catch (e) {
-    console.error(e);
+    console.error('Random reward error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -150,43 +156,75 @@ app.get('/api/admin/rewards', authMiddleware, async (req, res) => {
     const rows = await db.getAllRewards();
     res.json(rows);
   } catch (e) {
-    console.error(e);
+    console.error('Admin get rewards error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 app.post('/api/admin/logo', authMiddleware, upload.single('logo'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No file' });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     let logoUrl = null;
+
+    // 1. Try Vercel Blob if configured
     if (isVercel && blobPut && req.file.buffer) {
-      const safeName = `logo-${Date.now()}-${(req.file.originalname || 'logo.svg').replace(/[^a-zA-Z0-9.-]/g, '-')}`;
-      const blob = await blobPut(safeName, req.file.buffer, {
-        access: 'public',
-        contentType: req.file.mimetype || 'image/png'
-      });
-      logoUrl = blob.url;
-    } else {
-      logoUrl = '/assets/' + req.file.filename;
+      try {
+        const safeName = `logo-${Date.now()}-${(req.file.originalname || 'logo.png').replace(/[^a-zA-Z0-9.-]/g, '-')}`;
+        const blob = await blobPut(safeName, req.file.buffer, {
+          access: 'public',
+          contentType: req.file.mimetype || 'image/png'
+        });
+        logoUrl = blob.url;
+      } catch (blobErr) {
+        console.error('Vercel blob upload error:', blobErr);
+      }
+    }
+
+    // 2. Try writing to local assets folder if filesystem is writable
+    if (!logoUrl && req.file.buffer) {
+      try {
+        const ext = path.extname(req.file.originalname || '') || '.png';
+        const fname = `logo-${Date.now()}${ext}`;
+        const assetsDir = path.join(__dirname, 'public', 'assets');
+        if (!fs.existsSync(assetsDir)) {
+          fs.mkdirSync(assetsDir, { recursive: true });
+        }
+        const targetPath = path.join(assetsDir, fname);
+        fs.writeFileSync(targetPath, req.file.buffer);
+        logoUrl = '/assets/' + fname;
+      } catch (fsErr) {
+        console.warn('Local disk write unavailable, falling back to base64 Data URI:', fsErr.message);
+      }
+    }
+
+    // 3. Guaranteed fallback: Convert memory buffer to Data URI
+    if (!logoUrl && req.file.buffer) {
+      const mime = req.file.mimetype || 'image/png';
+      const b64 = req.file.buffer.toString('base64');
+      logoUrl = `data:${mime};base64,${b64}`;
+    }
+
+    if (!logoUrl) {
+      return res.status(500).json({ error: 'Could not process uploaded image' });
     }
 
     await db.setSetting('logo', logoUrl);
     res.json({ ok: true, path: logoUrl });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Admin logo upload error:', e);
+    res.status(500).json({ error: 'Server error: ' + (e.message || 'Upload failed') });
   }
 });
 
 app.post('/api/admin/rewards', authMiddleware, async (req, res) => {
   try {
     const { name, probability = 0, active = 1 } = req.body;
-    if (!name) return res.status(400).json({ error: 'Name required' });
-    const id = await db.addReward(name, Number(probability) || 0, active ? 1 : 0);
+    if (!name || !String(name).trim()) return res.status(400).json({ error: 'Name required' });
+    const id = await db.addReward(String(name).trim(), Number(probability) || 0, active ? 1 : 0);
     res.json({ id });
   } catch (e) {
-    console.error(e);
+    console.error('Admin add reward error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -195,10 +233,11 @@ app.put('/api/admin/rewards/:id', authMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
     const { name, probability, active } = req.body;
-    await db.updateReward(id, name, probability, active);
+    const ok = await db.updateReward(id, name, probability, active);
+    if (!ok) return res.status(404).json({ error: 'Reward not found' });
     res.json({ ok: true });
   } catch (e) {
-    console.error(e);
+    console.error('Admin update reward error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -206,10 +245,11 @@ app.put('/api/admin/rewards/:id', authMiddleware, async (req, res) => {
 app.delete('/api/admin/rewards/:id', authMiddleware, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    await db.deleteReward(id);
+    const ok = await db.deleteReward(id);
+    if (!ok) return res.status(404).json({ error: 'Reward not found' });
     res.json({ ok: true });
   } catch (e) {
-    console.error(e);
+    console.error('Admin delete reward error:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
