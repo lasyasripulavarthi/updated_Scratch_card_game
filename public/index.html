@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -8,13 +9,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 </head>
+
 <body class="player-page">
 
   <!-- ══════════ WELCOME SCREEN ══════════ -->
   <div id="welcomeScreen" class="welcome-screen">
     <div class="welcome-card">
       <div class="welcome-logo-wrap">
-        <img id="welcomeLogo" src="/api/logo" alt="Nutri Delight" class="welcome-logo" />
+        <img id="siteLogoAdmin" src="/api/logo" alt="logo" class="logo" style="display: block; margin: auto;" />
+        <script>
+          document.getElementById("welcomeLogo").src = "/api/logo?t=" + Date.now();
+        </script>
       </div>
       <h1 class="welcome-heading">Scratch &amp; Win!</h1>
       <p class="welcome-sub">Stand in front of the camera. Use your open palm to scratch and reveal your reward!</p>
@@ -60,7 +65,8 @@
     <!-- Mirrored camera background -->
     <video id="bgVideo" autoplay muted playsinline></video>
     <!-- Legacy hidden feed kept only for compatibility -->
-    <video id="mpVideo" autoplay muted playsinline style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;"></video>
+    <video id="mpVideo" autoplay muted playsinline
+      style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;"></video>
 
     <!-- ══ TOP GESTURE PANEL ══ -->
     <div id="gesturePanel" class="gesture-panel">
@@ -100,4 +106,5 @@
 
   <script src="/js/player.js"></script>
 </body>
+
 </html>
