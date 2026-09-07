@@ -499,6 +499,10 @@
     modelComplexity: 1,
     minDetectionConfidence: 0.6,
     minTrackingConfidence: 0.5,
+    // Input frames are mirrored for a natural user-facing camera view.
+    // Ensure MediaPipe interprets frames in selfie mode so landmarks
+    // (and handedness) match the mirrored display.
+    selfieMode: true,
   });
   handsModel.onResults(onHandResults);
 
