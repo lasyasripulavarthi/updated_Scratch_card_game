@@ -13,6 +13,9 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 const BLOB_KEY = 'nutri-delight-state.json';
 const usesBlobStorage = Boolean(process.env.VERCEL) && Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_READ_WRITE_TOKEN) && blobModule;
 
+// diagnostic log so deployments clearly show which storage backend is used
+console.log('DB storage: usesBlobStorage=', usesBlobStorage);
+
 let state = {
   admins: [],
   rewards: [],
@@ -137,6 +140,7 @@ async function init() {
 
 module.exports = {
   init,
+  usesBlobStorage,
   findAdminAsync: async function (username) {
     await load();
     return state.admins.find(a => a.username === username) || null;

@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -24,7 +26,19 @@ const DEFAULT_LOGO_URL = '/assets/logo.svg';
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
+// friendly JSON parse error handler
+app.use((err, req, res, next) => {
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
+  next(err);
+});
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
+
+// lightweight health check for deployments and uptime monitoring
+app.get('/health', (req, res) => {
+  res.json({ ok: true, time: Date.now() });
+});
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -261,3 +275,12 @@ if (require.main === module) {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
+
+// global error handlers to keep diagnostics in logs
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
